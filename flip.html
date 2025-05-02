@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kaart Flip Game</title>
+  <style>
+    :root {
+      --primary-color: #3b82f6;
+      --secondary-color: #4b5563;
+      --bg-color: #f3f4f6;
+      --card-front: #1f2937;
+      --card-back: #4b5563;
+      --text-color: #333;
+      --card-color: #4b5563;
+    }
+
+    /* Thema's */
+    .theme-red {
+      --primary-color: #ef4444;
+      --secondary-color: #dc2626;
+      --bg-color: #fee2e2;
+      --card-front: #b91c1c;
+      --card-back: #dc2626;
+    }
+
+    .theme-green {
+      --primary-color: #10b981;
+      --secondary-color: #059669;
+      --bg-color: #d1fae5;
+      --card-front: #047857;
+      --card-back: #059669;
+    }
+
+    .theme-blue {
+      --primary-color: #3b82f6;
+      --secondary-color: #2563eb;
+      --bg-color: #dbeafe;
+      --card-front: #1e40af;
+      --card-back: #2563eb;
+    }
+
+    .theme-striped {
+      --primary-color: #ef4444;
+      --secondary-color: #3b82f6;
+      --bg-color: linear-gradient(45deg, #fee2e2 25%, #dbeafe 25%, #dbeafe 50%, #fee2e2 50%, #fee2e2 75%, #dbeafe 75%, #dbeafe 100%);
+      --card-front: #b91c1c;
+      --card-back: #1e40af;
+    }
+
+    /* Kaart kleuren */
+    .card-color-red { --card-color: #ef4444; }
+    .card-color-yellow { --card-color: #f59e0b; }
+    .card-color-blue { --card-color: #3b82f6; }
+    .card-color-green { --card-color: #10b981; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      height: 100vh;
+      overflow: hidden;
+      transition: background 0.3s ease;
+    }
+
+    /* Homescherm stijlen */
+    .home-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .game-title {
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      color: var(--primary-color);
+    }
+
+    .game-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      margin: 10px 0;
+      width: 80%;
+      max-width: 300px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    .game-button:active {
+      transform: scale(0.95);
+    }
+
+    .settings-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    /* Instellingen venster */
+    .settings-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .settings-window {
+      background-color: white;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .settings-title {
+      font-size: 1.5rem;
+      margin: 0;
+      color: var(--primary-color);
+    }
+
+    .close-settings {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-color);
+    }
+
+    .settings-section {
+      margin-bottom: 20px;
+    }
+
+    .settings-section-title {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+
+    .theme-option, .animation-option, .color-option {
+      display: inline-block;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      padding: 8px 15px;
+      border-radius: 20px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .theme-option.active, .animation-option.active, .color-option.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    /* Spel scherm stijlen */
+    .game-screen {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      padding: 10px;
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .back-button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .hangman-button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .game-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 8px;
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 5px;
+    }
+
+    .card {
+      aspect-ratio: 2/3;
+      perspective: 1000px;
+      height: auto; /* Hoogte aanpassen aan de content */
+      max-height: 150px; /* Maximale hoogte voor de kaarten */
+    }
+
+    /* UNO kaart specifieke stijlen */
+    .uno-card {
+      position: relative;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 2rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      background-color: var(--card-color);
+      color: white;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Animatie varianten */
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .card.flip .card-inner.flip-down {
+      transform: rotateX(180deg);
+    }
+
+    .card.flip .card-inner.flip-up {
+      transform: rotateX(-180deg);
+    }
+
+    .card.flip .card-inner.flip-left {
+      transform: rotateY(180deg);
+    }
+
+    .card.flip .card-inner.flip-right {
+      transform: rotateY(-180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 8px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .card-front {
+      background-color: var(--card-front);
+    }
+
+    .card-back {
+      background-color: var(--card-back);
+    }
+
+    .flip-down .card-back, .flip-up .card-back {
+      transform: rotateX(180deg);
+    }
+
+    .flip-left .card-back, .flip-right .card-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Galgje stijlen */
+    .hangman-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hangman-container {
+      background-color: white;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .hangman-word {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+      font-size: 1.8rem;
+      letter-spacing: 10px;
+    }
+
+    .hangman-letters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      margin: 20px 0;
+    }
+
+    .hangman-letter {
+      width: 40px;
+      height: 40px;
+      border: 2px solid var(--primary-color);
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .hangman-letter:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .hangman-letter.used {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .hangman-strikes {
+      margin: 15px 0;
+      font-size: 1.2rem;
+    }
+
+    .hangman-strike {
+      display: inline-block;
+      width: 20px;
+      height: 3px;
+      background-color: red;
+      margin: 0 2px;
+    }
+
+    .hangman-result {
+      font-size: 1.5rem;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+
+    .how-to-play {
+      margin-bottom: 20px;
+      text-align: left;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 10px;
+    }
+
+    /* Overlay voor uitleg */
+    .info-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      z-index: 400;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .info-window {
+      background-color: white;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .info-close {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 15px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="home-screen" id="homeScreen">
+    <h1 class="game-title">Kaart Flip</h1>
+    <button class="game-button" onclick="startGame('random')">Willekeurige Kaarten</button>
+    <button class="game-button" onclick="startGame('custom')">Eigen Kaarten</button>
+    <button class="game-button" onclick="startGame('kids')">Kids Mode</button>
+    <button class="game-button" onclick="startGame('uno')">UNO Kaarten</button>
+    <div class="settings-icon" onclick="openSettings()">⚙️</div>
+  </div>
+
+  <div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-window">
+      <div class="settings-header">
+        <h2 class="settings-title">Instellingen</h2>
+        <button class="close-settings" onclick="closeSettings()">×</button>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="settings-section-title">Thema</h3>
+        <div class="theme-option active" onclick="changeTheme('default')">Standaard</div>
+        <div class="theme-option" onclick="changeTheme('red')">Rood</div>
+        <div class="theme-option" onclick="changeTheme('green')">Groen</div>
+        <div class="theme-option" onclick="changeTheme('blue')">Blauw</div>
+        <div class="theme-option" onclick="changeTheme('striped')">Rood/Blauw Strepen</div>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="settings-section-title">Kaart Kleur</h3>
+        <div class="color-option active" onclick="changeCardColor('default')">Standaard</div>
+        <div class="color-option" onclick="changeCardColor('red')">Rood</div>
+        <div class="color-option" onclick="changeCardColor('yellow')">Geel</div>
+        <div class="color-option" onclick="changeCardColor('blue')">Blauw</div>
+        <div class="color-option" onclick="changeCardColor('green')">Groen</div>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="settings-section-title">Kaart Animatie</h3>
+        <div class="animation-option active" onclick="changeAnimation('down')">Naar Beneden</div>
+        <div class="animation-option" onclick="changeAnimation('up')">Naar Boven</div>
+        <div class="animation-option" onclick="changeAnimation('left')">Naar Links</div>
+        <div class="animation-option" onclick="changeAnimation('right')">Naar Rechts</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-screen" id="gameScreen">
+    <div class="game-header">
+      <button class="back-button" onclick="backToHome()">←</button>
+      <button class="hangman-button" id="hangmanButton" onclick="startHangman()">🤖</button>
+    </div>
+    <div class="game-container" id="gameContainer"></div>
+  </div>
+
+  <div class="hangman-overlay" id="hangmanOverlay">
+    <div class="hangman-container" id="hangmanContainer">
+      <h2>Galgje</h2>
+      <div class="hangman-strikes">
+        Fouten: <span id="strikeCount">0</span>/6
+        <div id="strikeVisual"></div>
+      </div>
+      <div class="hangman-word" id="hangmanWord"></div>
+      <div class="hangman-letters" id="hangmanLetters"></div>
+      <div class="hangman-result" id="hangmanResult"></div>
+      <button onclick="closeHangman()">Terug naar spel</button>
+    </div>
+  </div>
+
+  <div class="info-overlay" id="infoOverlay">
+    <div class="info-window">
+      <h2>Hoe werkt galgje?</h2>
+      <div class="how-to-play">
+        <p>1. Kies een woord uit de willekeurige kaarten</p>
+        <p>2. Raad letters door op de knoppen te klikken</p>
+        <p>3. Bij een foute letter krijg je een streepje</p>
+        <p>4. Na 6 foute letters verlies je het spel</p>
+        <p>5. Raad het woord voordat je 6 fouten maakt!</p>
+      </div>
+      <button class="info-close" onclick="closeInfo()">Begrepen!</button>
+    </div>
+  </div>
+
+  <script>
+    // Game data
+    const allItems = [
+      'Kat', 'Hond', 'Boom', 'Wolk', 'Stoel', 'Auto', 'Huis', 'Boot', 'Fiets', 'Tafel',
+      'Lamp', 'Deur', 'Raam', 'Muur', 'Vloer', 'Kast', 'Schaar', 'Boek', 'Computer',
+      'Bord', 'Stift', 'Gum', 'School', 'Leraar', 'Leerling', 'Pauze', 'Speelplaats',
+      'Vakantie', 'Zomer', 'Winter', 'Herfst', 'Lente', 'Regen', 'Zon', 'Wind',
+      'Ster', 'Maan', 'Planeet', 'Melkweg', 'Tijd', 'Jaar', 'Maand', 'Week', 'Dag',
+      'Uur', 'Minuut', 'Seconde', 'Getal', 'Kleur', 'Vorm', 'Groot', 'Klein',
+      'Snel', 'Langzaam', 'Hoog', 'Laag', 'Warm', 'Koud', 'Zoet', 'Zuur',
+      'Hartig', 'Bitter', 'Zout', 'Eten', 'Drinken', 'Slapen', 'Werken', 'Spelen',
+      'Lezen', 'Schrijven', 'Tekenen', 'Muziek', 'Dansen', 'Zingen', 'Film',
+      'Theater', 'Kunst', 'Geschiedenis', 'Aardrijkskunde', 'Natuurkunde', 'Scheikunde',
+      'Biologie', 'Wiskunde', 'Nederlands', 'Engels', 'Duits', 'Frans', 'Spaans',
+      'Europa', 'Azië', 'Afrika', 'Amerika', 'Oceanië', 'Noord', 'Zuid', 'Oost',
+      'West', 'Stad', 'Dorp', 'Land', 'Rivier', 'Zee', 'Berg', 'Bos',
+      'Bloem', 'Plant', 'Dier', 'Vogel', 'Vis', 'Insect', 'Reptiel', 'Zoogdier',
+      'Vriend', 'Familie', 'Ouder', 'Kind', 'Broer', 'Zus', 'Oom', 'Tante',
+      'Neef', 'Nicht', 'Huisdier', 'Buren', 'Collega', 'Kennis', 'Gezondheid', 'Ziekte',
+      'Dokter', 'Ziekenhuis', 'Medicijn', 'Sport', 'Voetbal', 'Basketbal', 'Tennis', 'Hockey',
+      'Zwemmen', 'Hardlopen', 'Fietsen', 'Gymnastiek', 'Dans', 'Spel', 'Puzzel', 'Raadsel',
+      'Feest', 'Verjaardag', 'Kerstmis', 'Pasen', 'Sinterklaas', 'Nieuwjaar', 'Vakantie', 'Reizen',
+      'Avontuur', 'Ontdekken', 'Leren', 'Groei', 'Succes', 'Geluk', 'Vrede', 'Liefde',
+      'Hoop', 'Droom', 'Idee', 'Plan', 'Doel', 'Resultaat', 'Oplossing', 'Vraag',
+      'Antwoord', 'Probleem', 'Uitdaging', 'Kans', 'Mogelijkheid', 'Keuze', 'Beslissing', 'Actie',
+      'Vooruitgang', 'Verandering', 'Ontwikkeling', 'Innovatie', 'Creativiteit', 'Verbeelding', 'Inspiratie', 'Motivatie',
+      'Energie', 'Kracht', 'Wijsheid', 'Kennis', 'Inzicht', 'Begrip', 'Vertrouwen', 'Respect',
+      'Samenwerking', 'Communicatie', 'Gesprek', 'Discussie', 'Presentatie', 'Rapport', 'Document', 'Informatie',
+      'Technologie', 'Internet', 'Website', 'App', 'Software', 'Hardware', 'Digitaal', 'Analoog',
+      'Modern', 'Klassiek', 'Nieuw', 'Oud', 'Duurzaam', 'Milieu', 'Natuur', 'Landschap',
+      'Klimaat', 'Energiebron', 'Recyclen', 'Hergebruik', 'Besparen', 'Investeren', 'Economie', 'Politiek',
+      'Maatschappij', 'Cultuur', 'Traditie', 'Evenement', 'Festival', 'Concert', 'Tentoonstelling', 'Museum',
+      'Bibliotheek', 'Restaurant', 'Winkel', 'Markt', 'Plein', 'Straat', 'Gebouw', 'Architectuur'
+    ];
+
+    const kidsItems = [
+      'Auto', 'Boot', 'Huis', 'Wolk', 'Kat', 'Hond', 'Stoel', 'Fiets', 'Tafel', 'Lamp',
+      'Deur', 'Raam', 'Kast', 'Boek', 'Pop', 'Bal', 'Beer', 'Vis', 'Trein', 'Blok'
+    ];
+
+    // UNO kaarten data
+    const unoCards = [
+      { value: '0', color: 'red' }, { value: '1', color: 'red' }, { value: '2', color: 'red' },
+      { value: '3', color: 'red' }, { value: '4', color: 'red' }, { value: '5', color: 'red' },
+      { value: '6', color: 'red' }, { value: '7', color: 'red' }, { value: '8', color: 'red' },
+      { value: '9', color: 'red' }, { value: '+2', color: 'red' }, { value: 'Ø', color: 'red' },
+
+      { value: '0', color: 'blue' }, { value: '1', color: 'blue' }, { value: '2', color: 'blue' },
+      { value: '3', color: 'blue' }, { value: '4', color: 'blue' }, { value: '5', color: 'blue' },
+      { value: '6', color: 'blue' }, { value: '7', color: 'blue' }, { value: '8', color: 'blue' },
+      { value: '9', color: 'blue' }, { value: '+2', color: 'blue' }, { value: 'Ø', color: 'blue' },
+
+      { value: '0', color: 'green' }, { value: '1', color: 'green' }, { value: '2', color: 'green' },
+      { value: '3', color: 'green' }, { value: '4', color: 'green' }, { value: '5', color: 'green' },
+      { value: '6', color: 'green' }, { value: '7', color: 'green' }, { value: '8', color: 'green' },
+      { value: '9', color: 'green' }, { value: '+2', color: 'green' }, { value: 'Ø', color: 'green' },
+
+      { value: '0', color: 'yellow' }, { value: '1', color: 'yellow' }, { value: '2', color: 'yellow' },
+      { value: '3', color: 'yellow' }, { value: '4', color: 'yellow' }, { value: '5', color: 'yellow' },
+      { value: '6', color: 'yellow' }, { value: '7', color: 'yellow' }, { value: '8', color: 'yellow' },
+      { value: '9', color: 'yellow' }, { value: '+2', color: 'yellow' }, { value: 'Ø', color: 'yellow' },
+
+      { value: '+4', color: 'black' }, { value: '🎨', color: 'black' }
+    ];
+
+    // Galgje state
+    let hangmanWord = '';
+    let guessedLetters = [];
+    let wrongGuesses = 0;
+    let currentCards = [];
+    let allRandomItems = []; // Bewaar alle willekeurige items
+
+    // App state
+    let currentTheme = 'default';
+    let currentAnimation = 'down';
+    let currentCardColor = 'default';
+
+    // DOM elements
+    const homeScreen = document.getElementById('homeScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const gameContainer = document.getElementById('gameContainer');
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    const hangmanOverlay = document.getElementById('hangmanOverlay');
+    const hangmanContainer = document.getElementById('hangmanContainer');
+    const hangmanWordElement = document.getElementById('hangmanWord');
+    const hangmanLettersElement = document.getElementById('hangmanLetters');
+    const hangmanResultElement = document.getElementById('hangmanResult');
+    const strikeCountElement = document.getElementById('strikeCount');
+    const strikeVisualElement = document.getElementById('strikeVisual');
+    const hangmanButton = document.getElementById('hangmanButton');
+    const infoOverlay = document.getElementById('infoOverlay');
+
+    // Start game functions
+    function startGame(mode) {
+      homeScreen.style.display = 'none';
+      gameScreen.style.display = 'flex';
+      gameContainer.innerHTML = '';
+      hangmanButton.style.display = 'none';
+
+      if (mode === 'random') {
+        allRandomItems = shuffleArray([...allItems]); // Schud de volledige lijst
+        generateCards(allRandomItems.slice(0, 30)); // Neem de eerste 30
+        hangmanButton.style.display = 'block';
+      } else if (mode === 'custom') {
+        createCustomCards();
+      } else if (mode === 'kids') {
+        generateCards(kidsItems, 12);
+        hangmanButton.style.display = 'block';
+      } else if (mode === 'uno') {
+        generateUnoCards();
+      }
+    }
+
+    function backToHome() {
+      gameScreen.style.display = 'none';
+      homeScreen.style.display = 'flex';
+      closeHangman();
+      allRandomItems = []; // Reset de lijst met willekeurige items
+    }
+
+    // Card generation
+    function generateCards(wordList, count) {
+      const displayCount = count !== undefined ? count : 9;
+      const shuffled = shuffleArray([...wordList]).slice(0, displayCount);
+      currentCards = shuffled;
+      renderCards(shuffled);
+    }
+
+    function generateUnoCards() {
+      const shuffled = shuffleArray([...unoCards]).slice(0, 9);
+      renderUnoCards(shuffled);
+    }
+
+    function createCustomCards() {
+      const customWords = [];
+      for (let i = 0; i < 9; i++) {
+        const word = prompt(`Voer woord in voor kaart ${i + 1}:`);
+        if (word) {
+          customWords.push(word);
+        } else {
+          alert('Je moet voor elke kaart een woord invoeren!');
+          backToHome();
+          return;
+        }
+      }
+      currentCards = customWords;
+      renderCards(customWords);
+    }
+
+    function renderCards(words) {
+      gameContainer.innerHTML = '';
+      words.forEach(word => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const animationClass = `flip-${currentAnimation}`;
+
+        card.innerHTML = `
+          <div class="card-inner ${animationClass}">
+            <div class="card-front"></div>
+            <div class="card-back">${word}</div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          card.classList.toggle('flip');
+        });
+
+        gameContainer.appendChild(card);
+      });
+    }
+
+    function renderUnoCards(cards) {
+      gameContainer.innerHTML = '';
+      cards.forEach(cardData => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const animationClass = `flip-${currentAnimation}`;
+        const colorClass = cardData.color === 'black' ? 'uno-black' : `uno-${cardData.color}`;
+
+        card.innerHTML = `
+          <div class="card-inner ${animationClass}">
+            <div class="card-front"></div>
+            <div class="card-back">
+              <div class="uno-card ${colorClass}">
+                ${cardData.value}
+              </div>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          card.classList.toggle('flip');
+        });
+
+        gameContainer.appendChild(card);
+      });
+    }
+
+    // Galgje functies
+    function startHangman() {
+      openInfo();
+    }
+
+    function setupHangman() {
+      // Selecteer een willekeurige kaart als het woord
+      const randomIndex = Math.floor(Math.random() * currentCards.length);
+      hangmanWord = currentCards[randomIndex].toUpperCase();
+      guessedLetters = [];
+      wrongGuesses = 0;
+
+      // Update de UI
+      updateHangmanUI();
+
+      // Toon het galgje scherm
+      hangmanOverlay.style.display = 'flex';
+    }
+
+    function updateHangmanUI() {
+      // Toon het woord met streepjes voor ongekozen letters
+      let displayWord = '';
+      for (const letter of hangmanWord) {
+        if (guessedLetters.includes(letter) || letter === ' ') {
+          displayWord += letter + ' ';
+        } else {
+          displayWord += '_ ';
+        }
+      }
+      hangmanWordElement.textContent = displayWord;
+
+      // Update fouten teller
+      strikeCountElement.textContent = wrongGuesses;
+
+      // Update visuele streepjes
+      strikeVisualElement.innerHTML = '';
+      for (let i = 0; i < wrongGuesses; i++) {
+        const strike = document.createElement('div');
+        strike.className = 'hangman-strike';
+        strikeVisualElement.appendChild(strike);
+      }
+
+      // Maak letter knoppen
+      hangmanLettersElement.innerHTML = '';
+      for (let i = 65; i <= 90; i++) {
+        const letter = String.fromCharCode(i);
+        const letterButton = document.createElement('div');
+        letterButton.className = 'hangman-letter';
+        if (guessedLetters.includes(letter)) {
+          letterButton.classList.add('used');
+        }
+        letterButton.textContent = letter;
+        letterButton.addEventListener('click', () => guessLetter(letter));
+        hangmanLettersElement.appendChild(letterButton);
+      }
+
+      // Controleer of het spel voorbij is
+        checkGameEnd();
+    }
+
+    function guessLetter(letter) {
+      if (guessedLetters.includes(letter)) return;
+
+      guessedLetters.push(letter);
+
+      if (!hangmanWord.includes(letter)) {
+        wrongGuesses++;
+      }
+
+      updateHangmanUI();
+    }
+
+    function checkGameEnd() {
+      // Check voor winst
+      let won = true;
+      for (const letter of hangmanWord) {
+        if (letter !== ' ' && !guessedLetters.includes(letter)) {
+          won = false;
+          break;
+        }
+      }
+
+      if (won) {
+        hangmanResultElement.textContent = 'Gewonnen! 🎉';
+        hangmanResultElement.style.color = 'green';
+        return;
+      }
+
+      // Check voor verlies
+      if (wrongGuesses >= 6) {
+        hangmanResultElement.textContent = `Verloren! Het woord was: ${hangmanWord}`;
+        hangmanResultElement.style.color = 'red';
+      } else {
+        hangmanResultElement.textContent = '';
+      }
+    }
+
+    function closeHangman() {
+      hangmanOverlay.style.display = 'none';
+    }
+
+    // Info scherm
+    function openInfo() {
+      infoOverlay.style.display = 'flex';
+    }
+
+    function closeInfo() {
+      infoOverlay.style.display = 'none';
+      setupHangman();
+    }
+
+    // Settings functions
+    function openSettings() {
+      settingsOverlay.style.display = 'flex';
+    }
+
+    function closeSettings() {
+      settingsOverlay.style.display = 'none';
+    }
+
+    function changeTheme(theme) {
+      // Remove all theme classes
+      document.body.classList.remove(
+        'theme-red', 'theme-green', 'theme-blue', 'theme-striped'
+      );
+
+      // Add selected theme class
+      if (theme !== 'default') {
+        document.body.classList.add(`theme-${theme}`);
+      }
+
+      // Update active button
+      document.querySelectorAll('.theme-option').forEach(option => {
+        option.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      currentTheme = theme;
+    }
+
+    function changeCardColor(color) {
+      // Update active button
+      document.querySelectorAll('.color-option').forEach(option => {
+        option.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      currentCardColor = color;
+
+      // Update cards if in UNO mode
+      if (gameScreen.style.display === 'flex' && document.querySelector('.uno-card')) {
+        const cards = Array.from(gameContainer.children);
+        const cardData = cards.map(card => {
+          const value = card.querySelector('.uno-card').textContent.trim();
+          const colorClass = Array.from(card.querySelector('.uno-card').classList)
+            .find(cls => cls.startsWith('uno-') && cls !== 'uno-card');
+          const color = colorClass ? colorClass.replace('uno-', '') : 'blue';
+          return { value, color };
+        });
+        renderUnoCards(cardData);
+      }
+    }
+
+    function changeAnimation(animation) {
+      // Update active button
+      document.querySelectorAll('.animation-option').forEach(option => {
+        option.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      currentAnimation = animation;
+
+      // Re-render cards with new animation
+      if (gameScreen.style.display === 'flex') {
+        const cards = Array.from(gameContainer.children);
+        if (cards[0] && cards[0].querySelector('.uno-card')) {
+          // UNO kaarten
+          const cardData = cards.map(card => {
+            const value = card.querySelector('.uno-card').textContent.trim();
+            const colorClass = Array.from(card.querySelector('.uno-card').classList)
+              .find(cls => cls.startsWith('uno-') && cls !== 'uno-card');
+            const color = colorClass ? colorClass.replace('uno-', '') : 'blue';
+            return { value, color };
+          });
+          renderUnoCards(cardData);
+        } else if (cards[0]) {
+          // Normale kaarten
+          const words = cards.map(card =>
+            card.querySelector('.card-back').textContent
+          );
+          renderCards(words);
+        }
+      }
+    }
+
+    // Utility functions
+    function shuffleArray(array) {
+      const newArray = [...array];
+      for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+      }
+      return newArray;
+    }
+
+    // Touch event prevention for settings icon
+    document.querySelector('.settings-icon').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      openSettings();
+    }, { passive: false });
+  </script>
+</body>
+</html>
+
